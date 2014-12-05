@@ -1,0 +1,10 @@
+{
+	"ImportPath": "github.com/apg/logflect",
+	"GoVersion": "go1.3",
+	"Deps": [
+		{
+			"ImportPath": "github.com/bmizerany/pat",
+			"Rev": "b8a35001b773c267eb260a691f4e5499a3531600"
+		}
+	]
+}
