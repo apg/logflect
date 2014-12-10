@@ -5,16 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"sync"
 
 	"github.com/bmizerany/lpx"
 	"github.com/bmizerany/pat"
-)
-
-const (
-	DefaultBackfill = 100
-	MaxBackfill     = 1500
 )
 
 type Api struct {
@@ -128,28 +122,15 @@ func (s *Api) newSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	backfill := getBackfill(r.URL.Query().Get("backfill"))
-	if session, err := s.store.CreateSession(drainId, filter, backfill); err == ErrShuttingDown {
+	if session, err := s.store.CreateSession(drainId, filter); err == ErrShuttingDown {
 		http.Error(w, "Shutting Down", 503)
 	} else if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("action=create_session, err=%s", err)
 		return
 	} else {
-		log.Printf("action=create_session, id=%s drainId=%s backfill=%d", session.Id, drainId, backfill)
+		log.Printf("action=create_session, id=%s drainId=%s", session.Id, drainId)
 		http.Redirect(w, r, fmt.Sprintf("/v1/sessions/%s", session.Id), 301)
-	}
-}
-
-func getBackfill(backfill string) int {
-	if i, err := strconv.Atoi(backfill); err != nil {
-		return DefaultBackfill
-	} else if i > MaxBackfill {
-		return MaxBackfill
-	} else if i >= 0 {
-		return i
-	} else {
-		return 0
 	}
 }
 

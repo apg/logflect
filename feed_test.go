@@ -9,7 +9,7 @@ func TestFeed_AttachDetach(t *testing.T) {
 	feed := NewFeed("drain.id", 100, time.Hour)
 	session := NewSession("drain.id", NoFilter{})
 
-	feed.Attach(session, 10)
+	feed.Attach(session)
 	if _, exists := feed.sessions[session.Id]; !exists {
 		t.Errorf("session not attached to feed")
 	}

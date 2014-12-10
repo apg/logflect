@@ -34,20 +34,16 @@ func NewFeed(drainId string, maxCount int, maxAge time.Duration) *Feed {
 	}
 }
 
-func (f *Feed) Attach(session *Session, backfill int) {
-	f.backfill(session, backfill)
-
+func (f *Feed) Attach(session *Session) {
 	f.m.Lock()
-	defer f.m.Unlock()
-
 	f.sessions[session.Id] = session
+	f.m.Unlock()
 }
 
 func (f *Feed) Detach(session *Session) {
 	f.m.Lock()
-	defer f.m.Unlock()
-
 	delete(f.sessions, session.Id)
+	f.m.Unlock()
 }
 
 func (f *Feed) Publish(msg Message) {
@@ -95,23 +91,5 @@ func (f *Feed) cleanup() {
 		e := f.items.Back()
 		f.items.Remove(e)
 		l--
-	}
-}
-
-func (f *Feed) backfill(session *Session, backfill int) {
-	if backfill > 0 {
-		f.im.RLock()
-		defer f.im.RUnlock()
-
-		start := f.items.Len() - backfill
-		i := 0
-
-		for e := f.items.Front(); e != nil; e = e.Next() {
-			if i >= start {
-				session.Publish(e.Value.(Message))
-			}
-
-			i++
-		}
 	}
 }

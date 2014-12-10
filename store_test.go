@@ -15,7 +15,7 @@ func TestStore_GetSession(t *testing.T) {
 
 func TestStore_CreateSession(t *testing.T) {
 	store := NewStore(time.Hour, time.Hour)
-	_, err := store.CreateSession("some.drain.id", NoFilter{}, 10)
+	_, err := store.CreateSession("some.drain.id", NoFilter{})
 
 	if err != nil {
 		t.Errorf("CreateSession returned nil")
@@ -38,7 +38,7 @@ func TestStore_CreateSession(t *testing.T) {
 
 func TestStore_DestroySession(t *testing.T) {
 	store := NewStore(time.Hour, time.Hour)
-	session, _ := store.CreateSession("some.drain.id", NoFilter{}, 10)
+	session, _ := store.CreateSession("some.drain.id", NoFilter{})
 
 	destroyed := store.DestroySession(session.Id)
 	if !destroyed {

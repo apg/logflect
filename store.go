@@ -37,7 +37,7 @@ func (s *Store) GetSession(sessionId string) (*Session, bool) {
 	return session, exists
 }
 
-func (s *Store) CreateSession(drainId string, f Filter, backfill int) (*Session, error) {
+func (s *Store) CreateSession(drainId string, f Filter) (*Session, error) {
 	if s.shuttingDown {
 		return nil, ErrShuttingDown
 	}
@@ -45,7 +45,7 @@ func (s *Store) CreateSession(drainId string, f Filter, backfill int) (*Session,
 	session := NewSession(drainId, f)
 	feed := s.getFeed(drainId)
 	s.sessions[session.Id] = session
-	feed.Attach(session, backfill)
+	feed.Attach(session)
 
 	return session, nil
 }

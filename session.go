@@ -127,7 +127,7 @@ func (s *Session) removeChannel(id uint32) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	log.Printf("added channel to session")
+	log.Printf("remove channel from session")
 
 	delete(s.inboxes, id)
 	s.lastRemoval = time.Now()
