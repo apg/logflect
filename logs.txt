@@ -1,0 +1,1 @@
+66 <174>1 2012-07-22T00:06:26-00:00 somehost Go console - Hi from bar

@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+// TODO: Should be config parameters
+const (
+	MaxFeedCount = 5000
+	MaxFeedAge   = 2 * time.Hour
+)
+
 type Feed struct {
 	DrainId  string
 	items    *list.List
@@ -13,15 +19,18 @@ type Feed struct {
 	maxAge   time.Duration // can't really do anything with maxAge since messages are strings currently.
 	sessions map[string]*Session
 	im       *sync.RWMutex // lock for items
-	m        *sync.RWMutex
+	m        *sync.RWMutex // lock for sessions map
 }
 
 func NewFeed(drainId string, maxCount int, maxAge time.Duration) *Feed {
 	return &Feed{
 		DrainId:  drainId,
+		items:    new(list.List),
 		maxCount: maxCount,
 		maxAge:   maxAge,
 		sessions: make(map[string]*Session),
+		im:       new(sync.RWMutex),
+		m:        new(sync.RWMutex),
 	}
 }
 
@@ -47,12 +56,13 @@ func (f *Feed) Publish(msg Message) {
 	f.im.Unlock()
 
 	f.m.RLock()
-	defer f.m.Unlock()
+	defer f.m.RUnlock()
 
 	for _, session := range f.sessions {
 		session.Publish(msg)
 	}
 
+	// TODO: This should probably happen occassionally...
 	f.cleanup() // cleans up old messages
 }
 
@@ -82,7 +92,7 @@ func (f *Feed) cleanup() {
 	l := f.items.Len()
 
 	for l > f.maxCount {
-		e := f.items.Front()
+		e := f.items.Back()
 		f.items.Remove(e)
 		l--
 	}
@@ -91,7 +101,7 @@ func (f *Feed) cleanup() {
 func (f *Feed) backfill(session *Session, backfill int) {
 	if backfill > 0 {
 		f.im.RLock()
-		defer f.im.Unlock()
+		defer f.im.RUnlock()
 
 		start := f.items.Len() - backfill
 		i := 0
